@@ -7,11 +7,16 @@ export function movies() {
   let step;
   let count = 0;
 
-  if (window.innerWidth >= 768) {
-    step = 20;
-  } else {
-    step = 100;
+  function updateScreenType() {
+    let screenWidth = window.innerWidth;
+    if (screenWidth > 768) {
+      step = 20;
+    } else {
+      step = 100;
+    }
   }
+  updateScreenType();
+  window.addEventListener("resize", updateScreenType);
 
   arrowRight.addEventListener("click", () => {
     // styles
