@@ -1,13 +1,12 @@
 import { movies } from "./modules/movies";
+import { popular } from "./modules/popular";
+import { series } from "./modules/series";
 
-import {
-  getRecommendMovies,
-  initEventListeners,
-} from "./modules/search";
+import { getRecommendMovies, initEventListeners } from "./modules/search";
 
-import { getPopularMovies } from "./modules/popular";
-import { initSeriesModule } from "./modules/series";
 import { getMovies } from "./modules/home";
+
+// const functions = [movies(), popular(), series()];
 
 document.addEventListener("DOMContentLoaded", () => {
   const isSearchPage = document.querySelector(".search-page") !== null;
@@ -17,14 +16,26 @@ document.addEventListener("DOMContentLoaded", () => {
     getRecommendMovies();
   } else {
     getMovies();
-    getPopularMovies();
-    initSeriesModule();
   }
 });
-
-movies();
 
 window.addEventListener("resize", () => {
   updateItemsPerView();
   showNextItems();
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  movies();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  popular();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  series();
+});
+
+movies();
+series();
+popular();

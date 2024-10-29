@@ -1,101 +1,90 @@
-export const movieListContainer = document.getElementById("movie-list");
-let currentIndex = 0;
-let itemsPerView = 1;
+export function series() {
+  const arrowRight = document.querySelector(".movie-arrow-right");
+  const arrowLeft = document.querySelector(".movie-arrow-left");
+  const movieList = document.querySelector(".movie-movie-list");
 
-export async function fetchSeries() {
-  const apiKey = "1227f05d-bdfa-4477-b065-bda4caa8dc7a";
-  try {
-    const response = await fetch(
-      `https://kinopoiskapiunofficial.tech/api/v2.2/films?order=RATING&type=TV_SERIES&ratingFrom=2&ratingTo=9&yearFrom=1000&yearTo=3000&page=1`,
+  let offset = 0;
+  let step;
+  let count = 0;
+
+  function updateScreenType() {
+    let screenWidth = window.innerWidth;
+    if (screenWidth > 768) {
+      step = 20;
+    } else {
+      step = 100;
+    }
+  }
+  updateScreenType();
+  window.addEventListener("resize", updateScreenType);
+
+  arrowRight.addEventListener("click", () => {
+    // styles
+    const offsetLimit = -(count - 4) * step;
+    const blockRightArrow = -3 * step;
+    if (offset === blockRightArrow) {
+      arrowRight.classList.add("arrow-inactive");
+    }
+
+    // slider
+    if (offset !== offsetLimit) {
+      const newOffset = offset - step;
+      movieList.style.transform = `translateX(${newOffset}%)`;
+      offset = newOffset;
+
+      arrowLeft.classList.remove("arrow-inactive");
+    }
+  });
+
+  arrowLeft.addEventListener("click", () => {
+    //styles
+    if (offset === -25) {
+      arrowLeft.classList.add("arrow-inactive");
+    }
+
+    //slider
+    if (offset < 0) {
+      const newOffset = offset + step;
+      movieList.style.transform = `translateX(${newOffset}%)`;
+      offset = newOffset;
+
+      arrowRight.classList.remove("arrow-inactive");
+    }
+  });
+
+  const displayFilms = (list) => {
+    movieList.innerHTML = "";
+    list.forEach((film) => {
+      const filmDiv = document.createElement("div");
+      filmDiv.className = "movie-movie-list-item";
+      filmDiv.innerHTML = `
+          <img class="movie-movie-list-item-img" src="${
+            film?.posterUrlPreview
+          }" alt="" />
+          <span class="movie-movie-list-item-title">${
+            film?.nameRu ? film?.nameRu : ""
+          }</span>
+          <button class="movie-movie-list-item-button">Смотреть</button>
+        `;
+      movieList.appendChild(filmDiv);
+    });
+  };
+
+  const fetchData = async () => {
+    const result = await fetch(
+      "https://kinopoiskapiunofficial.tech/api/v2.2/films/collections?type=POPULAR_SERIES&page=1",
       {
+        method: "GET",
         headers: {
-          "X-API-KEY": apiKey,
+          "X-API-KEY": "2b815b33-2426-41f3-a0cf-35d938bcbb00",
           "Content-Type": "application/json",
         },
       }
     );
-    const data = await response.json();
-    console.log(data);
+    const filmsList = await result.json();
+    displayFilms(filmsList.items);
+    count = filmsList.items.length;
+  };
 
-    if (data.items.length > 0) {
-      displaySeries(data.items);
-    } else {
-      movieListContainer.innerHTML = "<p>No series found</p>";
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    movieListContainer.innerHTML = "<p>Error</p>";
-  }
-}
-
-export function displaySeries(series) {
-  movieListContainer.innerHTML = "";
-  series.forEach((seriesItem) => {
-    const movieListItem = document.createElement("div");
-    movieListItem.className = "movie-list-item";
-
-    const img = document.createElement("img");
-    img.className = "movie-list-item-img";
-    img.src = seriesItem.posterUrlPreview || "./img/numerator.jpg";
-    img.alt = seriesItem.nameRu;
-    const title = document.createElement("span");
-    title.className = "movie-list-item-title";
-    title.textContent = seriesItem.nameRu;
-
-    const button = document.createElement("button");
-    button.className = "movie-list-item-button";
-    button.textContent = "Watch";
-
-    movieListItem.appendChild(img);
-    movieListItem.appendChild(title);
-    movieListItem.appendChild(button);
-
-    movieListContainer.appendChild(movieListItem);
-  });
-  updateItemsPerView();
-  showNextItems();
-}
-
-export function updateItemsPerView() {
-  const containerWidth = movieListContainer.clientWidth;
-  const itemWidth = 120; // Ширина элемента (в пикселях)
-
-  itemsPerView = Math.floor(containerWidth / itemWidth);
-}
-
-export function showNextItems() {
-  const items = movieListContainer.children;
-  const totalItems = items.length;
-
-  // Скрываем все элементы
-  for (let i = 0; i < totalItems; i++) {
-    items[i].style.display = "none";
-  }
-
-  // Показываем следующие элементы
-  for (
-    let i = currentIndex;
-    i < Math.min(currentIndex + itemsPerView, totalItems);
-    i++
-  ) {
-    items[i].style.display = "block";
-  }
-
-  currentIndex += 1;
-  if (currentIndex >= totalItems) {
-    currentIndex = totalItems - itemsPerView;
-  }
-}
-export function initSeriesModule() {
-  fetchSeries();
-  const arrow = document.getElementById("arrow");
-
-  if (arrow) {
-    arrow.addEventListener("click", showNextItems);
-  }
-
-  window.addEventListener("resize", () => {
-    updateItemsPerView();
-    showNextItems();
-  });
+  fetchData();
 }
